@@ -44,6 +44,245 @@
 	5.  [基数排序](#8.5)
 	6.  [排序方法总结](#8.6)
 
+# 线性表<a id="1"/>
+
+- 同一线性表中元素具有相同特性。
+- 相邻数据元素之间存在序偶关系。
+- 除第一个元素外，其他每一个元素有一个且仅有一个直接前驱。
+- 除最后一个元素外，其他每一个元素有一个且仅有一个直接后继。
+
+## 顺序表<a id="1.1"/>
+
+- 定义：将线性表中的元素相继存放在一个**连续**的存储空间中。
+
+- 存储结构：数组。
+
+- 特点：线性表的顺序存储方式。
+
+- 存取方式：顺序存取，随机存取。
+
+## 链表<a id="1.2"/>
+
+### 单链表<a id="1.2.1"/>
+
+- 定义：用一组地址任意的存储单元存放线性表中的数据元素。
+
+- 结构：每个元素由结点(Node)构成,	它包括两个域：数据域Data和指针域Link。
+
+![](./images/1.png)
+
+- 存储结构：链式存储结构。
+- 特点：存储单元可以不连续。
+- 存取方式：顺序存取。
+- 类型定义
+
+```c++
+struct Node{
+    int data;
+    Node* link;
+};
+Node* head = new Node;
+```
+
+- 初始化
+
+```c++
+void Create(Node* head, int* initArray, int l){
+    cout << "Create a array of size " << l << endl;
+    Node* p, * t = head;
+    for(int i = 0; i < l; i++){
+        p = new Node;
+        p->data = initArray[i];
+        t->link = p;
+        t = p;
+    }
+    t->link = nullptr;
+}
+```
+
+- 增删改查
+
+```c++
+void Insert(Node* head, int value, int index){
+    cout << "Insert " << value << " to index " << index << endl;
+    if(index < 0){
+        cout << "Index is invalid!" << endl;
+        return;
+    }
+    Node* p, * t = head;
+    while(t->link && index){
+        t = t->link;
+        index--;
+    }
+    if(index > 0){
+        cout << "Index is invalid!" << endl;
+        return;
+    }
+    p = new Node;
+    p->data = value;
+    p->link = t->link;
+    t->link = p;
+}
+
+void Delete(Node* head, int index){
+    cout << "Delete value of index " << index << endl;
+    if(index < 0){
+        cout << "Index is invalid!" << endl;
+        return;
+    }
+    Node* p, * t = head;
+    while(t->link && index){
+        t = t->link;
+        index--;
+    }
+    if(index > 0 || !t->link){
+        cout << "Index is invalid!" << endl;
+        return;
+    }
+    p = t->link;
+    t->link = p->link;
+    delete p;
+}
+
+void Update(Node* head, int value, int index){
+    cout << "Update value of index " << index << endl;
+    if(index < 0){
+        cout << "Index is invalid!" << endl;
+        return;
+    }
+    Node* p = head->link;
+    while(p->link && index){
+        p = p->link;
+        index--;
+    }
+    if(index > 0){
+        cout << "Index is invalid!" << endl;
+        return;
+    }
+    p->data = value;
+}
+
+int Find(Node* head, int index){
+    cout << "Find value of index " << index << endl;
+    if(index < 0){
+        cout << "Index is invalid!" << endl;
+        return -1;
+    }
+    Node* p = head->link;
+    while(p->link && index){
+        p = p->link;
+        index--;
+    }
+    if(index > 0){
+        cout << "Index is invalid!" << endl;
+        return -1;
+    }
+    return p->data;
+}
+```
+
+- 长度
+
+```c++
+int Length(Node* head){
+    int len = 0;
+    Node* p = head;
+    while(p->link){
+        p = p->link;
+        len++;
+    }
+    return len;
+}
+```
+
+- 清空
+
+```c++
+void Clear(Node* head){
+    cout << "Clear the array" << endl;
+    Node* p;
+    while(head->link){
+        p = head->link;
+        head->link = p->link;
+        delete p;
+    }
+    head->link = nullptr;
+}
+```
+
+### 静态链表 <a id="1.2.2"/>
+
+- 用一维数组描述线性链表
+
+### 循环链表<a id="1.2.3"/>
+
+- 特点：最后一个结点的 link 指针不为NULL，而是指向头结点。只要已知表中某一结点的地址，就可搜寻所有结点的地址。
+- 存储结构：链式存储结构。
+- 约瑟夫问题：n 个人围成一个圆圈，首先第1个人从1开始一个人一个人顺时针报数,  报到第m个人，令其出列。然后再从下一个人开始，从1顺时针报数，报到第m个人，再令其出列，…，如此下去,  直到圆圈中只剩一个人为止。此人即为优胜者。
+
+![](./images/2.png)
+
+```c++
+void Josephus(int n, int m){
+    Node* head = new Node; // 头节点
+    head->data = 1; // 赋值创建循环链表
+    Node* p, * t = head;
+    for(int i = 2; i <= n; i++){
+        p = new Node;
+        p->data = i;
+        t->link = p;
+        t = p;
+    }
+    t->link = head;
+
+    t = head; // 从头节点开始
+    for(int i = 1; i < n; i++){ // 依次删除n-1个节点
+        for(int j = 0; j < m - 2; j++) // 移动m-2次，不用m-1是为了方便删除节点
+            t = t->link;
+        cout << i << ": " << t->link->data << endl;
+        p = t->link; // 删除节点
+        t->link = p->link;
+        t = t->link; // 将下一个节点作为开始
+        delete p;
+    }
+    cout << "result: " << t->data << endl;
+}
+```
+
+### 双向链表<a id="1.2.4"/>
+
+- 特点：在单链表的基础上，对每个节点添加了一个前驱指针。
+- 结构：
+
+![](./images/3.png)
+
+- 类型定义
+
+```c++
+struct Node{
+    int data;
+    Node* prior, * next;
+};
+Node* head = new Node;
+```
+
+## 顺序表与链表的比较<a id="1.3"/>
+
+- 基于空间的比较
+  - 存储分配的方式
+    - 顺序表的存储空间是静态分配的
+    - 链表的存储空间是动态分配的
+  - 存储密度 = 结点数据本身所占的存储量/结点结构所占的存储总量
+    - 顺序表的存储密度 = 1
+    - 链表的存储密度 < 1
+- 基于时间的比较
+  - 存取方式
+    - 顺序表可以随机存取，也可以顺序存取
+    - 链表是顺序存取的
+  - 插入/删除时移动元素个数
+    - 顺序表平均需要移动近一半元素
+    - 链表不需要移动元素，只需要修改指针
+
 # 排序<a id="8"/>
 
 - **排序**
